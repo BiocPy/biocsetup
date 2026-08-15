@@ -1,5 +1,7 @@
 import shutil
+import subprocess
 from pathlib import Path
+import datetime
 
 from pyscaffold import api, file_system, shell
 from pyscaffoldext.markdown.extension import Markdown
@@ -14,6 +16,7 @@ def create_repository(
     description: str | None = "Add a short description here!",
     license: str = "MIT",
     rst: bool = False,
+    use_uv: bool = False,
 ) -> None:
     """
     Create a new BiocPy Python package repository.
@@ -33,6 +36,15 @@ def create_repository(
             Whether to use 'markdown' or 'rst'.
             Defaults to False, to use 'markdown'.
     """
+    if use_uv:
+        try:
+            from hatchit.scaffold import create_hatchit_repository
+            return create_hatchit_repository(project_path, description, license)
+        except ImportError:
+            print("Error: The 'hatchit' package is required for uv scaffolds.")
+            print("Please install it in your environment: pip install hatchit")
+            return
+
     # Create project using pyscaffold with markdown extension
     if description is None:
         description = "Add a short description here!"
@@ -108,7 +120,7 @@ html_theme = "furo"
     # Update requirements.txt for docs
     docs_requirements = Path(project_path) / "docs" / "requirements.txt"
     with open(docs_requirements, "a") as f:
-        f.write("myst-nb\nfuro\nsphinx-autodoc-typehints\n")
+        f.write("myst-nb\nfuro\nsphinx-autodoc-typehints\nlinkify-it-py\n")
         modified_files.append(docs_requirements)
 
     # Modify README
@@ -180,3 +192,5 @@ docstring-code-line-length = 20
         shell.git("commit", "-m", "BiocSetup configuration")
 
     print("BiocSetup complete! 🚀 💥")
+
+

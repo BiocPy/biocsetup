@@ -1,0 +1,14 @@
+{
+  "title": "REPLACE_PROJECT_NAME",
+  "description": "REPLACE_DESCRIPTION",
+  "creators": [
+    {
+      "name": "YOUR_NAME",
+      "affiliation": "YOUR_AFFILIATION",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "access_right": "open",
+  "license": "MIT",
+  "upload_type": "software"
+}

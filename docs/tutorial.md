@@ -20,7 +20,7 @@ This guide presents a consistent workflow to make Python packaging less painful 
 
 ## Packaging setup
 
-[BiocSetup](https://github.com/BiocPy/BiocSetup) (based on [PyScaffold](https://pyscaffold.org/en/stable/)) automates some of the common configurtion we use across all BiocPy packages. Yes, it's a package to create packages—very meta I know :).
+[BiocSetup](https://github.com/BiocPy/BiocSetup) (based on [PyScaffold](https://pyscaffold.org/en/stable/) or optionally [uv](https://docs.astral.sh/uv/)) automates some of the common configurtion we use across all BiocPy packages. Yes, it's a package to create packages—very meta I know :).
 
 First, install `biocsetup` if you haven't already (`pip install biocsetup`).
 
@@ -55,6 +55,8 @@ This command creates a complete project structure:
 ```
 
 **Markdown vs. reStructuredText:** By default, `biocsetup` uses Markdown (`.md`) as the preferred format for documentation. If you're a fan of [reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) (`.rst`) or just enjoy slightly more cryptic syntax, add the `--rst` flag when running `biocsetup`. The only noticeable difference will be file extensions that make your eyes bleed (`.rst` instead of `.md`).
+
+**Using uv for initialization:** By default, `biocsetup` relies on PyScaffold to initialize the project structure. If you prefer to use [uv](https://docs.astral.sh/uv/) for a slightly simpler configuration, simply add the `--uv` flag to the command.
 
 ## Adding your source code
 

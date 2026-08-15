@@ -69,3 +69,33 @@ def test_cli_help():
     assert "Create a new BiocPy Python package" in result.output
     assert "--description" in result.output
     assert "--license" in result.output
+    assert "--uv" in result.output
+
+def test_cli_with_uv():
+    """Test CLI with --uv option."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(
+            main,
+            [
+                "test-project-uv",
+                "--uv",
+                "--description", "Test project description with uv",
+                "--license", "MIT",
+            ]
+        )
+        assert result.exit_code == 0
+
+        # Check if project was created
+        project_dir = Path("test-project-uv")
+        assert project_dir.exists()
+
+        # Check if pyproject.toml exists and has the description
+        pyproject_content = (project_dir / "pyproject.toml").read_text()
+        assert "Test project description with uv" in pyproject_content
+
+        # Check if tests directory was created
+        assert (project_dir / "tests" / "test_basic.py").exists()
+        
+        # Check if github workflows were copied
+        assert (project_dir / ".github" / "workflows" / "run-tests.yml").exists()

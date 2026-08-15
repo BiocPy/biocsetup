@@ -31,6 +31,7 @@ Options:
 - `--description`, `-d`: Project description
 - `--license`, `-l`: License to use (default: MIT)
 - `--rst`: To use reStructuredText, otherwise uses Markdown by default.
+- `--uv`: To use `uv` for initialization instead of `PyScaffold`.
 
 ### Python API
 
@@ -44,6 +45,7 @@ create_repository(
     description="Description of my package",
     license="MIT",
     rst=False,
+    use_uv=False,
 )
 ```
 
