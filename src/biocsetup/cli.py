@@ -12,13 +12,15 @@ __license__ = "MIT"
 @click.option("--description", "-d", help="Project description", default="Add a short description here!")
 @click.option("--license", "-l", default="MIT", help="License (default: MIT)")
 @click.option("--rst", "-rst", is_flag=True, help="Use rst for documentation, defaults to using markdown!")
-def main(project_path: str, description: str, license: str, rst: bool):
+@click.option("--pyscaffold", "-ps", is_flag=True, help="Use pyscaffold for project initialization instead of hatchit.")
+def main(project_path: str, description: str, license: str, rst: bool, pyscaffold: bool):
     """Create a new BiocPy Python package."""
     create_repository(
         project_path=project_path,
         description=description,
         license=license,
         rst=rst,
+        use_pyscaffold=pyscaffold,
     )
 
 

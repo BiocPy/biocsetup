@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+biocsetup = {path = ".", editable = true}
+hatchit = {path = "../hatchit", editable = true}
+
+[dev-packages]
+tox = "*"
+pytest = "*"
+click = "*"
+
+[requires]
+python_version = "3.14"

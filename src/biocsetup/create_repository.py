@@ -14,6 +14,7 @@ def create_repository(
     description: str | None = "Add a short description here!",
     license: str = "MIT",
     rst: bool = False,
+    use_pyscaffold: bool = False,
 ) -> None:
     """
     Create a new BiocPy Python package repository.
@@ -33,6 +34,18 @@ def create_repository(
             Whether to use 'markdown' or 'rst'.
             Defaults to False, to use 'markdown'.
     """
+    if not use_pyscaffold:
+        try:
+            from hatchit.scaffold import create_hatchit_repository
+
+            return create_hatchit_repository(project_path, description, license)
+        except ImportError:
+            import sys
+
+            print("Error: The 'hatchit' package is required for default scaffolds.")
+            print("Please install it in your environment: pip install hatchit")
+            sys.exit(1)
+
     # Create project using pyscaffold with markdown extension
     if description is None:
         description = "Add a short description here!"
@@ -108,7 +121,7 @@ html_theme = "furo"
     # Update requirements.txt for docs
     docs_requirements = Path(project_path) / "docs" / "requirements.txt"
     with open(docs_requirements, "a") as f:
-        f.write("myst-nb\nfuro\nsphinx-autodoc-typehints\n")
+        f.write("myst-nb\nfuro\nsphinx-autodoc-typehints\nlinkify-it-py\n")
         modified_files.append(docs_requirements)
 
     # Modify README
@@ -177,6 +190,16 @@ docstring-code-line-length = 20
         for f in modified_files:
             shell.git("add", str(f.relative_to(project_path)))
 
-        shell.git("commit", "-m", "BiocSetup configuration")
+        try:
+            # Check if git user config exists before committing
+            import subprocess
+
+            name_configured = subprocess.run(["git", "config", "user.name"], capture_output=True).returncode == 0
+            email_configured = subprocess.run(["git", "config", "user.email"], capture_output=True).returncode == 0
+
+            if name_configured and email_configured:
+                shell.git("commit", "-m", "BiocSetup configuration")
+        except Exception:
+            pass  # Git commit is optional
 
     print("BiocSetup complete! 🚀 💥")

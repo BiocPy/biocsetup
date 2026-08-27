@@ -13,14 +13,14 @@ This guide presents a consistent workflow to make Python packaging less painful 
 ## Overview of this document
 
 1. **Package structure:** Using a scaffolder (`BiocSetup & PyScaffold`) gives every project the same starting structure.
-2. **Isolation for testing:** `tox` runs tests in clean, isolated environments. This mimics how your code will run elsewhere and catches issues before your users.
+2. **Isolation for testing:** `hatchit` (or `tox` if using PyScaffold) runs tests in clean, isolated environments. This mimics how your code will run elsewhere and catches issues before your users.
 3. **The `src` layout:** Putting your code in `src/package_name` prevents a common pitfall: accidentally importing your local code instead of the installed version during testing.
 4. **Automation:** GitLab CI/CD or GitHub Actions handle testing, documentation builds, and publishing. Set it up once, and let the bots do all the work.
 5. **Release and development cycles:** We strictly separate development (branches) from releases (tags), preventing accidental releases to PyPI or interfering with development cycles. For multi-developer projects, try to maintain master/main in a functional state and put incomplete work within a feature branch. Depending upon team size and the value of peer review, consider using pull requests prior to merging into main/master. Use [semantic versioning](https://semver.org/) for tags.
 
 ## Packaging setup
 
-[BiocSetup](https://github.com/BiocPy/BiocSetup) (based on [PyScaffold](https://pyscaffold.org/en/stable/)) automates some of the common configurtion we use across all BiocPy packages. Yes, it's a package to create packages—very meta I know :).
+[BiocSetup](https://github.com/BiocPy/BiocSetup) (based on [hatchit](https://github.com/BiocPy/hatchit) or optionally [PyScaffold](https://pyscaffold.org/en/stable/)) automates some of the common configurtion we use across all BiocPy packages. Yes, it's a package to create packages—very meta I know :).
 
 First, install `biocsetup` if you haven't already (`pip install biocsetup`).
 
@@ -48,13 +48,15 @@ This command creates a complete project structure:
 ├── setup.py          # Mostly a shim for compatibility now, config is in setup.cfg/pyproject.toml
 ├── src               # <--- YOUR CODE GOES HERE!
 ├── tests             # <--- YOUR TESTS GO HERE!
-└── tox.ini           # Configuration for testing and other tasks (tox)
+└── tox.ini           # Configuration for testing and other tasks (tox; only if using PyScaffold)
 
 4 directories, 9 files
 
 ```
 
 **Markdown vs. reStructuredText:** By default, `biocsetup` uses Markdown (`.md`) as the preferred format for documentation. If you're a fan of [reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) (`.rst`) or just enjoy slightly more cryptic syntax, add the `--rst` flag when running `biocsetup`. The only noticeable difference will be file extensions that make your eyes bleed (`.rst` instead of `.md`).
+
+**Using PyScaffold for initialization:** By default, `biocsetup` relies on `hatchit` to initialize the project structure. If you prefer to use [PyScaffold](https://pyscaffold.org/) for initialization, simply add the `--pyscaffold` (or `-ps`) flag to the command.
 
 ## Adding your source code
 
@@ -84,12 +86,12 @@ tests/
 └── test_edge_cases.py
 ```
 
-- **Running tests:** This is where [`tox`](https://tox.wiki/en/4.26.0/) shines. It reads the `tox.ini` file, creates a temporary virtual environment, installs your package and its dependencies _exactly_ as defined, and then runs `pytest`. This ensures your tests run in a clean, reproducible environment, mimicking how users will install your package.
+- **Running tests:** We use [`hatchit`](https://github.com/BiocPy/hatchit) (or [`tox`](https://tox.wiki/en/4.26.0/) if you opted for PyScaffold). These tools create a temporary virtual environment, install your package and its dependencies _exactly_ as defined, and then run `pytest`. This ensures your tests run in a clean, reproducible environment, mimicking how users will install your package. Run `hatchit test` (or `tox`) to run the tests.
 
 To run the default test suite (which includes running `pytest` and checking code coverage):
 
 ```sh
-⋊> ~/P/s/my-awesome-package on master  tox
+⋊> ~/P/s/my-awesome-package on master  hatchit test
 .pkg: install_requires> python -I -m pip install 'setuptools>=46.1.0' 'setuptools_scm[toml]>=5'
 ..............
 ..............
@@ -117,7 +119,7 @@ What's neat is that you also get coverage reports, which tell you which parts of
 
 ### "Help\! My Dependencies Are Missing\!"
 
-Your package probably uses other Python libraries (NumPy, Pandas, etc.). If these are not listed as dependencies, your isolated tox environment does not install them and you will run into errors about missing packages. Open `setup.cfg` and look for this section:
+Your package probably uses other Python libraries (NumPy, Pandas, etc.). If these are not listed as dependencies, your isolated test environment does not install them and you will run into errors about missing packages. Depending on your setup (hatchit vs pyscaffold), open `pyproject.toml` (and look for `dependencies`) or `setup.cfg` (and look for `install_requires`):
 
 ```yaml
 [options]
@@ -151,12 +153,12 @@ The scaffolding process sets up the `docs` directory with a default theme ([furo
   2. Link to your new page from `docs/index.md` (or `docs/index.rst`) under the `toctree` (Table of Contents Tree) directive.
   3. By default, `docs/changelog.md` includes the content of `/CHANGELOG.md`, so you only have to update the root changelog.
   4. Write detailed docstrings and use [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) for API documentation. Docstring format is to taste, but [Google](https://google.github.io/styleguide/pyguide.html#s3.8-comments-and-docstrings) or [NumPy](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard) style are easily readable and both can be parsed by the [napoleon](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) Sphinx extension.
-- **Building the docs:** Use `tox` again\! This ensures the docs build in a clean environment with all necessary extensions.
+- **Building the docs:** Use `hatchit docs` (or `tox -e docs` if using PyScaffold)\! This ensures the docs build in a clean environment with all necessary extensions.
 
 To generate the HTML files for the documentation:
 
 ```sh
-⋊> ~/P/s/my-awesome-package on master  tox -e docs
+⋊> ~/P/s/my-awesome-package on master  hatchit docs
 docs: install_deps> python -I -m pip install -r /Users/kancherj/Projects/scratch/my-awesome-package/docs/requirements.txt
 ..............
 ..............
@@ -197,10 +199,10 @@ git checkout -b feature/perf
 ```
 
 2. **Code & test:** Write your code in `src/`, add corresponding tests in `tests/`.
-3. **Test locally:** Run `tox` frequently\! Catch errors early.
+3. **Test locally:** Run `hatchit test` (or `tox`) frequently\! Catch errors early.
 
 ```sh
-tox
+hatchit test
 ```
 
 4. **Commit & push:** Make small, logical commits. Push your branch to GitHub. If you want to follow a structure for commits, [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) is very helpful.
@@ -212,7 +214,7 @@ git push origin feature/perf
 ```
 
 5. **Pull Request (PR):** Go to GitHub and open a Pull Request from your branch to `main`. Describe your changes.
-6. **CI checks:** GitHub Actions (configured in `.github/workflows/run-tests.yml`) will automatically run `tox` on your PR to ensure tests pass on different Python versions and platforms (windows, mac and linux).
+6. **CI checks:** GitHub Actions (configured in `.github/workflows/run-tests.yml`) will automatically run `hatchit test` (or `tox`) on your PR to ensure tests pass on different Python versions and platforms (windows, mac and linux).
 7. **Merge:** Once reviewed and CI passes, merge the PR into `main`.
 8. **Repeat:** Continue the cycle for the next feature or fix.
 
@@ -293,9 +295,9 @@ Consistent code is easier to read, review, and maintain.
 - Get familiar with [git](https://git-scm.com/), or if you want to get fancy, use [jujustu](https://github.com/jj-vcs/jj)
 - There are many alternatives to each of the tools mentioned here
   - [quartodoc](https://github.com/machow/quartodoc)/[mkdocs](https://www.mkdocs.org/) instead of Sphinx
-  - [nox](https://nox.thea.codes/en/stable/) instead of tox
+  - [nox](https://nox.thea.codes/en/stable/) or [tox](https://tox.wiki/en/4.26.0/) instead of hatchit
   - [poetry](https://python-poetry.org/) and [hatch](https://hatch.pypa.io/) (probably go with the later since its developed by the official PyPI working group on packaging) instead of setuptools
 
 ## Conclusion
 
-And that's the gist of it\! It might seem like a lot initially, but once you go through the cycle a couple of times, it becomes second nature. Remember the key steps: scaffold, code in `src/`, test in `tests/` (run with `tox`), manage dependencies in `setup.cfg`, document in `docs/` (build with `tox -e docs`), use branches for development, and tag for releases.
+And that's the gist of it\! It might seem like a lot initially, but once you go through the cycle a couple of times, it becomes second nature. Remember the key steps: scaffold, code in `src/`, test in `tests/` (run with `hatchit test`), manage dependencies, document in `docs/` (build with `hatchit docs`), use branches for development, and tag for releases.
