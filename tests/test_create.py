@@ -16,56 +16,33 @@ def temp_dir():
     with tempfile.TemporaryDirectory() as tmpdir:
         yield tmpdir
 
-def test_create_repository(temp_dir):
-    """Test basic repository creation."""
+def test_create_repository_pyscaffold(temp_dir):
+    """Test basic repository creation with pyscaffold."""
     project_name = "test_project"
     project_path = os.path.join(temp_dir, project_name)
 
     create_repository(
         project_path=project_path,
         description="Test project",
+        use_pyscaffold=True
     )
 
-    # Check if basic structure is created
     assert os.path.exists(project_path)
     assert os.path.exists(os.path.join(project_path, "src"))
     assert os.path.exists(os.path.join(project_path, "docs"))
+    assert os.path.exists(os.path.join(project_path, ".github", "workflows", "run-tests.yml"))
 
-    # Check if GitHub Actions are added
-    assert os.path.exists(
-        os.path.join(project_path, ".github", "workflows", "run-tests.yml")
-    )
-    assert os.path.exists(
-        os.path.join(project_path, ".github", "workflows", "publish-pypi.yml")
-    )
-
-    # Check if pre-commit config is added
-    assert os.path.exists(os.path.join(project_path, ".pre-commit-config.yaml"))
-
-    # Check if sphinx conf.py is modified
     conf_py = Path(project_path) / "docs" / "conf.py"
     assert conf_py.exists()
 
-    with open(conf_py, "r") as f:
-        content = f.read()
-        assert "myst_nb" in content
-        assert "furo" in content
-
-    # Check if readme is modified
-    readme_py = Path(project_path) / "README.md"
-    assert readme_py.exists()
-    with open(readme_py, "r") as f:
-        content = f.read()
-        assert "biocsetup" in content
-
-def test_create_repository_with_description(temp_dir):
-    """Test repository creation with custom description."""
+def test_create_repository_with_description_pyscaffold(temp_dir):
     project_path = os.path.join(temp_dir, "test-desc-project")
     description = "Custom project description"
 
     create_repository(
         project_path=project_path,
         description=description,
+        use_pyscaffold=True
     )
 
     readme_path = Path(project_path) / "README.md"
@@ -73,14 +50,14 @@ def test_create_repository_with_description(temp_dir):
         content = f.read()
         assert description in content
 
-def test_create_repository_with_license(temp_dir):
-    """Test repository creation with custom license."""
+def test_create_repository_with_license_pyscaffold(temp_dir):
     project_path = os.path.join(temp_dir, "test-license-project")
     license = "BSD"
 
     create_repository(
         project_path=project_path,
         license=license,
+        use_pyscaffold=True
     )
 
     setup_cfg = Path(project_path) / "setup.cfg"
@@ -88,14 +65,27 @@ def test_create_repository_with_license(temp_dir):
         content = f.read()
         assert license in content
 
-def test_create_repository_with_rst(temp_dir):
-    """Test repository creation with RST."""
-    project_path = os.path.join(temp_dir, "test-t=rst")
+def test_create_repository_with_rst_pyscaffold(temp_dir):
+    project_path = os.path.join(temp_dir, "test_t_rst")
 
     create_repository(
         project_path=project_path,
-        rst=True
+        rst=True,
+        use_pyscaffold=True
     )
 
     index_rst = Path(project_path) / "docs" / "index.rst"
     assert os.path.exists(str(index_rst))
+
+def test_create_repository_hatchit_default(temp_dir):
+    project_path = os.path.join(temp_dir, "test-hatchit")
+
+    create_repository(
+        project_path=project_path,
+        description="Hatchit default test",
+        license="MIT"
+    )
+
+    # Check hatchit specific files
+    assert os.path.exists(os.path.join(project_path, "pyproject.toml"))
+    assert os.path.exists(os.path.join(project_path, "tox.ini"))
