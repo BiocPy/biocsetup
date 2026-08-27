@@ -1,7 +1,5 @@
 import shutil
-import subprocess
 from pathlib import Path
-import datetime
 
 from pyscaffold import api, file_system, shell
 from pyscaffoldext.markdown.extension import Markdown
@@ -39,9 +37,11 @@ def create_repository(
     if not use_pyscaffold:
         try:
             from hatchit.scaffold import create_hatchit_repository
+
             return create_hatchit_repository(project_path, description, license)
         except ImportError:
             import sys
+
             print("Error: The 'hatchit' package is required for default scaffolds.")
             print("Please install it in your environment: pip install hatchit")
             sys.exit(1)
@@ -193,14 +193,13 @@ docstring-code-line-length = 20
         try:
             # Check if git user config exists before committing
             import subprocess
+
             name_configured = subprocess.run(["git", "config", "user.name"], capture_output=True).returncode == 0
             email_configured = subprocess.run(["git", "config", "user.email"], capture_output=True).returncode == 0
-            
+
             if name_configured and email_configured:
                 shell.git("commit", "-m", "BiocSetup configuration")
         except Exception:
             pass  # Git commit is optional
 
     print("BiocSetup complete! 🚀 💥")
-
-

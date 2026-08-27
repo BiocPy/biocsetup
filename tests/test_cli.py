@@ -95,6 +95,6 @@ def test_cli_hatchit_default():
 
         # Check if tests directory was created
         assert (project_dir / "tests" / "test_basic.py").exists()
-        
+
         # Check if github workflows were copied
         assert (project_dir / ".github" / "workflows" / "run-tests.yml").exists()
